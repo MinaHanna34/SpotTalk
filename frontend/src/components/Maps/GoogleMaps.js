@@ -32,19 +32,13 @@ const GoogleMaps = () => {
   if (error) return <div>{error}</div>;
 
   return (
-    <div style={{ flex: '1 1 auto', display: 'flex' }}>
-      <GoogleMap
-        zoom={12}
-        center={currentLocation}
-        mapContainerStyle={{
-          flex: 1, // Use flex to dynamically fill space
-          width: '100%', // Full width of the container
-          height: '100vh', // 100% of the viewport height
-        }}
-      >
-        <Marker position={currentLocation} />
-      </GoogleMap>
-    </div>
+    <GoogleMap
+      zoom={12}
+      center={currentLocation}
+      mapContainerStyle={{ width: '100%', height: '1000px' }}
+    >
+      <Marker position={currentLocation} />
+    </GoogleMap>
   );
 };
 
