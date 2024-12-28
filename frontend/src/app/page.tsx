@@ -1,5 +1,4 @@
-import Link from "next/link";
-import Navbar from "@/components/Navbar/Navbar";
+ import Navbar from "@/components/Navbar/Navbar";
 import GoogleMaps from "@/components/Maps/GoogleMaps";
 
 export default function Home() {

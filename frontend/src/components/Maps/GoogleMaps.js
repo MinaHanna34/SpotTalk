@@ -5,7 +5,7 @@ import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
 
 const GoogleMaps = () => {
   const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY, // Use an environment variable for security
+    googleMapsApiKey: 'process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,' // Use an environment variable for security
   });
 
   const [currentLocation, setCurrentLocation] = useState({ lat: 37.7749, lng: -122.4194 }); // Default to San Francisco
