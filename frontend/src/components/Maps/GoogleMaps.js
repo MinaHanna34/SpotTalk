@@ -35,7 +35,7 @@ const GoogleMaps = () => {
     <GoogleMap
       zoom={12}
       center={currentLocation}
-      mapContainerStyle={{ width: '100%', height: '500px' }}
+      mapContainerStyle={{ width: '100%', height: '1200px' }}
     >
       <Marker position={currentLocation} />
     </GoogleMap>
