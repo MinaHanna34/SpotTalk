@@ -17,7 +17,7 @@ const GoogleMaps = () => {
   useEffect(() => {
     const fetchMarkers = async () => {
       try {
-        const response = await fetch('https://backend-5qjpq8rpd-minas-projects-7b1e7949.vercel.app');
+        const response = await fetch('https://backend-5qjpq8rpd-minas-projects-7b1e7949.vercel.app/api/spots');
         const data = await response.json();
         setMarkers(
           data.filter(
@@ -63,7 +63,7 @@ const GoogleMaps = () => {
 
   const handleAddSpot = async () => {
     try {
-      const response = await fetch('https://backend-5qjpq8rpd-minas-projects-7b1e7949.vercel.app', {
+      const response = await fetch('https://backend-5qjpq8rpd-minas-projects-7b1e7949.vercel.app/api/spots', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newSpot),

@@ -19,10 +19,12 @@ const pool = new Pool({
 
 app.use(express.json());
 app.use(cors({
-    origin: ['http://localhost:3000', 'https://spot-talk.vercel.app'], // Add allowed origins
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true
+  origin: ['http://localhost:3000', 'https://spot-talk.vercel.app'], // Frontend URLs
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 }));
+
 
 // Set up session management
 app.use(session({
