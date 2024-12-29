@@ -32,7 +32,7 @@ app.use(session({
 }));
 
 // Routes for spots
-require('./routes/spots')(app, pool);
+require('./spots')(app, pool);
 
 // Create or alter tables for spots
 pool.query(`

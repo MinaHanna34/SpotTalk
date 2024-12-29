@@ -1,3 +1,4 @@
 
 backend/.env.local
 backend/.env
+backend/api/.env
