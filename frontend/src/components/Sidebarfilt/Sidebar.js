@@ -7,13 +7,7 @@ const Sidebar = ({ currentLocation, markers, setSelectedMarker }) => {
   const [filteredMarkers, setFilteredMarkers] = useState([]);
 
   useEffect(() => {
-    if (!currentLocation || markers.length === 0) {
-      console.log("No current location or markers to filter.");
-      return;
-    }
-
-    console.log("Current Location:", currentLocation);
-    console.log("Markers:", markers);
+    if (!currentLocation || markers.length === 0) return;
 
     // Haversine formula to calculate distance between two coordinates
     const calculateDistance = (lat1, lng1, lat2, lng2) => {
@@ -39,15 +33,9 @@ const Sidebar = ({ currentLocation, markers, setSelectedMarker }) => {
         marker.lat,
         marker.lng
       );
-
-      console.log(
-        `Marker ${marker.name || marker.id}: ${distanceToMarker} miles away`
-      );
-
       return distanceToMarker <= distance;
     });
 
-    console.log("Filtered Markers:", nearbyMarkers);
     setFilteredMarkers(nearbyMarkers);
   }, [currentLocation, markers, distance]);
 

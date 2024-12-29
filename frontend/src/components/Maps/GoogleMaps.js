@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { GoogleMap, useLoadScript, Marker, InfoWindow } from '@react-google-maps/api';
+import Sidebar from "@/components/Sidebarfilt/Sidebar";
 
 const GoogleMaps = () => {
   const { isLoaded, loadError } = useLoadScript({
@@ -38,11 +39,13 @@ const GoogleMaps = () => {
           const { latitude, longitude } = position.coords;
           setCurrentLocation({ lat: latitude, lng: longitude });
         },
-        () => {
+        (error) => {
+          console.error('Error fetching location:', error);
           setCurrentLocation({ lat: 37.7749, lng: -122.4194 }); // Default to San Francisco
         },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 30000, maximumAge: 60000 } // Adjusted values
       );
+      
     } else {
       console.error('Geolocation not supported by this browser.');
       setCurrentLocation({ lat: 37.7749, lng: -122.4194 });
@@ -109,7 +112,6 @@ const GoogleMaps = () => {
       console.error('Error adding spot:', err);
     }
   };
-
   const handleAddComment = async (spotId) => {
     if (!comment.trim()) {
       alert('Comment cannot be empty');
@@ -149,176 +151,182 @@ const GoogleMaps = () => {
       console.error('Error adding comment:', err);
     }
   };
-
   return (
-    <div className="h-screen">
-      <div className="flex justify-between items-center p-4 bg-gray-100">
-        <h1 className="text-lg font-bold">  </h1>
-        <button
-          onClick={() => setEventMode((prev) => !prev)}
-          className={`px-4 py-2 rounded ${eventMode ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`}
-        >
-          {eventMode ? 'Disable Event Mode' : 'Enable Event Mode'}
-        </button>
-      </div>
-      <GoogleMap
-  zoom={  currentLocation ? 12 : 3}
-  center={currentLocation || { lat: 0, lng: 0 }}
-  mapContainerStyle={{ width: '100%', height: '100%' }}
-  onClick={handleMapClick}
-  options={{
-    disableDefaultUI: eventMode,         // Hide all controls in event mode
-    draggable: !eventMode,              // Disable dragging
-    scrollwheel: !eventMode,            // Disable zooming with the scroll wheel
-    keyboardShortcuts: !eventMode,      // Disable keyboard shortcuts
-    zoomControl: !eventMode,            // Hide zoom control
-    clickableIcons: !eventMode,         // Disable clicking POIs
-    gestureHandling: eventMode ? 'none' : 'auto', // Disable gestures in event mode
-    tilt: 0,                            // Restrict tilt
-    heading: 0,                         // Restrict heading (camera rotation)
-  }}
->
-
-
-        {currentLocation && (
-          <Marker
-            position={currentLocation}
-            icon={{
-              url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
-            }}
-          />
-        )}
-
-        {markers.map((marker) => (
-          <Marker
-            key={marker.id}
-            position={{ lat: marker.lat, lng: marker.lng }}
-            icon={{
-              url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-            }}
-            onClick={() => setSelectedMarker(marker)}
-          />
-        ))}
-
-        {newSpot && (
-          <InfoWindow
-            position={{ lat: newSpot.lat, lng: newSpot.lng }}
-            onCloseClick={() => setNewSpot(null)}
+    <div className="h-screen flex">
+      {/* Sidebar */}
+      <Sidebar
+        currentLocation={currentLocation}
+        markers={markers}
+        setSelectedMarker={setSelectedMarker}
+      />
+  
+      <div className="flex-grow relative">
+        <div className="absolute top-0 left-0 right-0 flex justify-between items-center p-4 bg-gray-100 z-10">
+          <h1 className="text-lg font-bold"></h1>
+          <button
+            onClick={() => setEventMode((prev) => !prev)}
+            className={`px-4 py-2 rounded ${eventMode ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`}
           >
-            <div>
-              <h3>Add a New Spot</h3>
-              <input
-                type="text"
-                placeholder="Name"
-                value={newSpot.name}
-                onChange={(e) =>
-                  setNewSpot((prev) => ({ ...prev, name: e.target.value }))
-                }
-                className="border p-2 rounded w-full mb-2"
-              />
-              <textarea
-                placeholder="Description"
-                value={newSpot.description}
-                onChange={(e) =>
-                  setNewSpot((prev) => ({ ...prev, description: e.target.value }))
-                }
-                className="border p-2 rounded w-full mb-2"
-              ></textarea>
-              <input
-                type="number"
-                placeholder="Rating (0-5)"
-                value={newSpot.stars}
-                onChange={(e) =>
-                  setNewSpot((prev) => ({
-                    ...prev,
-                    stars: Math.min(5, Math.max(0, parseInt(e.target.value) || 0)),
-                  }))
-                }
-                className="border p-2 rounded w-full mb-2"
-              />
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="mb-2"
-              />
-              {newSpot.images.map((image, idx) => (
-                <img key={idx} src={image} alt={`Upload Preview ${idx}`} className="w-24 h-24 m-2" />
-              ))}
-              <button onClick={handleAddSpot} className="bg-blue-500 text-white px-4 py-2 rounded">
-                Save Spot
-              </button>
-            </div>
-          </InfoWindow>
-        )}
-
-{selectedMarker && (
-  <InfoWindow
-    position={{ lat: selectedMarker.lat, lng: selectedMarker.lng }}
-    onCloseClick={() => setSelectedMarker(null)}
-  >
-    <div className="w-56 p-3 space-y-3">
-      <h3 className="text-md font-semibold text-gray-800 truncate">{selectedMarker.name || 'Unnamed Spot'}</h3>
-      <p className="text-xs text-gray-600">
-        <span className="font-medium text-gray-700">Description:</span> {selectedMarker.description || 'No description provided.'}
-      </p>
-      <p className="text-xs text-gray-600">
-        <span className="font-medium text-gray-700">Rating:</span> {selectedMarker.stars || 0}/5
-      </p>
-
-      {selectedMarker.images && selectedMarker.images.length > 0 ? (
-        <div className="flex flex-wrap gap-1">
-          {selectedMarker.images.map((image, idx) => (
-            <img
-              key={idx}
-              src={image}
-              alt={`Spot Image ${idx}`}
-              className="w-16 h-16 rounded shadow"
+            {eventMode ? 'Disable Event Mode' : 'Enable Event Mode'}
+          </button>
+        </div>
+  
+        <GoogleMap
+          zoom={currentLocation ? 12 : 3}
+          center={currentLocation || { lat: 0, lng: 0 }}
+          mapContainerStyle={{ width: '100%', height: '100%' }}
+          onClick={handleMapClick}
+          options={{
+            disableDefaultUI: eventMode,
+            draggable: !eventMode,
+            scrollwheel: !eventMode,
+            keyboardShortcuts: !eventMode,
+            zoomControl: !eventMode,
+            clickableIcons: !eventMode,
+            gestureHandling: eventMode ? 'none' : 'auto',
+            tilt: 0,
+            heading: 0,
+          }}
+        >
+          {currentLocation && (
+            <Marker
+              position={currentLocation}
+              icon={{
+                url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+              }}
+            />
+          )}
+  
+          {markers.map((marker) => (
+            <Marker
+              key={marker.id}
+              position={{ lat: marker.lat, lng: marker.lng }}
+              icon={{
+                url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+              }}
+              onClick={() => setSelectedMarker(marker)}
             />
           ))}
-        </div>
-      ) : (
-        <p className="text-xs text-gray-500">No images available.</p>
-      )}
-
-      <div>
-        <h4 className="text-sm font-medium text-gray-700">Comments:</h4>
-        <div className="mt-1 space-y-1">
-          {selectedMarker.comments.length > 0 ? (
-            selectedMarker.comments.map((comment, idx) => (
-              <div
-                key={idx}
-                className="p-1 border rounded bg-gray-50 text-xs text-gray-700 shadow-sm"
-              >
-                Anonymous: {comment}
+  
+          {newSpot && (
+            <InfoWindow
+              position={{ lat: newSpot.lat, lng: newSpot.lng }}
+              onCloseClick={() => setNewSpot(null)}
+            >
+              <div>
+                <h3>Add a New Spot</h3>
+                <input
+                  type="text"
+                  placeholder="Name"
+                  value={newSpot.name}
+                  onChange={(e) =>
+                    setNewSpot((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                  className="border p-2 rounded w-full mb-2"
+                />
+                <textarea
+                  placeholder="Description"
+                  value={newSpot.description}
+                  onChange={(e) =>
+                    setNewSpot((prev) => ({ ...prev, description: e.target.value }))
+                  }
+                  className="border p-2 rounded w-full mb-2"
+                ></textarea>
+                <input
+                  type="number"
+                  placeholder="Rating (0-5)"
+                  value={newSpot.stars}
+                  onChange={(e) =>
+                    setNewSpot((prev) => ({
+                      ...prev,
+                      stars: Math.min(5, Math.max(0, parseInt(e.target.value) || 0)),
+                    }))
+                  }
+                  className="border p-2 rounded w-full mb-2"
+                />
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="mb-2"
+                />
+                {newSpot.images.map((image, idx) => (
+                  <img key={idx} src={image} alt={`Upload Preview ${idx}`} className="w-24 h-24 m-2" />
+                ))}
+                <button onClick={handleAddSpot} className="bg-blue-500 text-white px-4 py-2 rounded">
+                  Save Spot
+                </button>
               </div>
-            ))
-          ) : (
-            <p className="text-xs text-gray-500">No comments yet.</p>
+            </InfoWindow>
           )}
-        </div>
+  
+          {selectedMarker && (
+            <InfoWindow
+              position={{ lat: selectedMarker.lat, lng: selectedMarker.lng }}
+              onCloseClick={() => setSelectedMarker(null)}
+            >
+              <div className="w-56 p-3 space-y-3">
+                <h3 className="text-md font-semibold text-gray-800 truncate">{selectedMarker.name || 'Unnamed Spot'}</h3>
+                <p className="text-xs text-gray-600">
+                  <span className="font-medium text-gray-700">Description:</span> {selectedMarker.description || 'No description provided.'}
+                </p>
+                <p className="text-xs text-gray-600">
+                  <span className="font-medium text-gray-700">Rating:</span> {selectedMarker.stars || 0}/5
+                </p>
+  
+                {selectedMarker.images && selectedMarker.images.length > 0 ? (
+                  <div className="flex flex-wrap gap-1">
+                    {selectedMarker.images.map((image, idx) => (
+                      <img
+                        key={idx}
+                        src={image}
+                        alt={`Spot Image ${idx}`}
+                        className="w-16 h-16 rounded shadow"
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-500">No images available.</p>
+                )}
+  
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700">Comments:</h4>
+                  <div className="mt-1 space-y-1">
+                    {selectedMarker.comments.length > 0 ? (
+                      selectedMarker.comments.map((comment, idx) => (
+                        <div
+                          key={idx}
+                          className="p-1 border rounded bg-gray-50 text-xs text-gray-700 shadow-sm"
+                        >
+                          Anonymous: {comment}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-gray-500">No comments yet.</p>
+                    )}
+                  </div>
+                </div>
+  
+                <textarea
+                  placeholder="Add a comment"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  className="w-full p-1 border rounded text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                ></textarea>
+                <button
+                  onClick={() => handleAddComment(selectedMarker.id)}
+                  className="w-full bg-blue-500 text-white px-2 py-1 rounded shadow hover:bg-blue-600 transition text-xs"
+                >
+                  Add Comment
+                </button>
+              </div>
+            </InfoWindow>
+          )}
+        </GoogleMap>
       </div>
-
-      <textarea
-        placeholder="Add a comment"
-        value={comment}
-        onChange={(e) => setComment(e.target.value)}
-        className="w-full p-1 border rounded text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
-      ></textarea>
-      <button
-        onClick={() => handleAddComment(selectedMarker.id)}
-        className="w-full bg-blue-500 text-white px-2 py-1 rounded shadow hover:bg-blue-600 transition text-xs"
-      >
-        Add Comment
-      </button>
-    </div>
-  </InfoWindow>
-)}
-
-      </GoogleMap>
     </div>
   );
-};
+};  
 
 export default GoogleMaps;
