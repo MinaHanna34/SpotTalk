@@ -5,9 +5,7 @@ const Navbar = () => {
     <nav className="w-full border-b border-gray-200 px-8 py-4 flex justify-between items-center bg-white">
       {/* Left Section: About Link */}
       <div className="flex items-center">
-        <Link href="/about" className="text-gray-800 hover:text-blue-600">
-          About
-        </Link>
+        
       </div>
 
       {/* Center Section: Title */}
