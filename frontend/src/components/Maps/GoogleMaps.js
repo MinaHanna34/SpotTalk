@@ -20,7 +20,7 @@ const GoogleMaps = () => {
   useEffect(() => {
     const fetchMarkers = async () => {
       try {
-        const response = await fetch('https://backend-lemon-chi-68.vercel.app/spots');
+        const response = await fetch('https://api.canbyr.com/spots');
         const data = await response.json();
         console.log("Fetched Spots:", data); // Log the fetched spots
         setMarkers(data.filter(marker => typeof marker.lat === 'number' && typeof marker.lng === 'number'));
@@ -84,7 +84,7 @@ const GoogleMaps = () => {
 
   const handleAddSpot = async () => {
     try {
-      const response = await fetch('https://backend-lemon-chi-68.vercel.app/spots', {
+      const response = await fetch('https://api.canbyr.com/spots', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newSpot),
@@ -94,7 +94,7 @@ const GoogleMaps = () => {
         const savedSpot = await response.json();
 
         // Fetch the latest spots from the backend
-        const fetchUpdatedMarkers = await fetch('https://backend-lemon-chi-68.vercel.app/spots');
+        const fetchUpdatedMarkers = await fetch('https://api.canbyr.com/spots');
         const updatedMarkers = await fetchUpdatedMarkers.json();
 
         // Update the markers with the latest data
@@ -119,7 +119,7 @@ const GoogleMaps = () => {
     }
 
     try {
-      const response = await fetch(`https://backend-lemon-chi-68.vercel.app/spots/${spotId}/comments`, {
+      const response = await fetch(`https://api.canbyr.com/spots/${spotId}/comments`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ comment }),

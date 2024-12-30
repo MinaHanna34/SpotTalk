@@ -12,16 +12,15 @@ type Spot = {
 };
 
 export default function Home() {
-  const [stories, setStories] = useState<Spot[]>([]); // Use the Spot type here
+  const [stories, setStories] = useState<Spot[]>([]);
 
   useEffect(() => {
-    // Fetch events from your backend
     const fetchEvents = async () => {
       try {
-        const response = await fetch("http://localhost:5000/spots"); // Replace with your API URL
+        const response = await fetch("https://api.canbyr.com/spots"); // Updated to HTTPS
         const data = await response.json();
         setStories(
-          data.map((spot: any) => ({
+          data.map((spot: Spot) => ({
             id: spot.id,
             name: spot.name || "Unnamed Event",
             description: spot.description || "No description available.",
@@ -77,11 +76,10 @@ export default function Home() {
           Share your experience or explore more stories. Together, we can honor the memories of loved ones and raise awareness.
         </p>
         <Link href="/map">
-  <button className="px-6 py-3 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
-    Explore Now
-  </button>
-</Link>
-
+          <button className="px-6 py-3 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
+            Explore Now
+          </button>
+        </Link>
       </div>
     </div>
   );
