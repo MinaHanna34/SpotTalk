@@ -13,7 +13,7 @@ const Navbar = () => {
       {/* Center Section: Title */}
       <div className="flex justify-center">
         <Link href="/" className="text-2xl font-bold text-blue-600">
-          SpotTalk
+        Canbyr
         </Link>
       </div>
 
