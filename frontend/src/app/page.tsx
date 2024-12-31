@@ -6,6 +6,8 @@ import Link from "next/link";
 
 type Spot = {
   id: number;
+  username: string;
+
   name: string;
   description: string;
   images: string[];
@@ -22,6 +24,8 @@ export default function Home() {
         setStories(
           data.map((spot: Spot) => ({
             id: spot.id,
+            username: spot.username || "Anonymous",
+
             name: spot.name || "Unnamed Event",
             description: spot.description || "No description available.",
             images: Array.isArray(spot.images) ? spot.images : [],
@@ -52,10 +56,21 @@ export default function Home() {
       <div className="p-6 bg-white max-w-6xl mx-auto rounded-lg shadow-md mt-6">
         <h2 className="text-2xl font-bold text-center text-blue-800 mb-4">Stories</h2>
         <div className="space-y-6">
-          {stories.slice(0, 3).map((story) => (
-            <div key={story.id} className="bg-gray-50 p-6 rounded-lg shadow hover:shadow-lg transition">
-              <h3 className="text-xl font-bold text-gray-800 mb-2">{story.name}</h3>
-              <p className="text-md text-gray-700 mb-4">{story.description}</p>
+          {stories.slice(0, 3).map((story, index) => (
+            <div
+              key={story.id}
+              className={`bg-gray-50 p-6 rounded-lg shadow hover:shadow-lg transition duration-700 animate-slide-in`}
+              style={{ animationDelay: `${index * 0.3}s` }} // Delay each story slightly
+            >
+              <p className="text-md font-semibold text-gray-600 mb-2">
+                <span className="text-gray-800">Username:</span> {story.username}
+              </p>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                <span className="text-gray-800">Title:</span> {story.name}
+              </h3>
+              <p className="text-md text-gray-700 mb-4">
+                <span className="text-gray-800">Description:</span> {story.description}
+              </p>
               {story.images.length > 0 && (
                 <img
                   src={story.images[0]}
