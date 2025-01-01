@@ -19,7 +19,7 @@ const pool = new Pool({
 
 app.use(express.json());
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://spot-talk.vercel.app', 'https://www.canbyr.com'], // Frontend URLs
+  origin: ['http://localhost:3000',  'https://www.canbyr.com'], // Frontend URLs
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,

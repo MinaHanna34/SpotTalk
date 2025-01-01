@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
  import { GoogleIcon, MicrosoftIcon } from '@/components/icons/SocialIcons';
 
-const LoginPage = () => {
-  const [email, setEmail] = useState('');
+const SignupPage = () => {
+  const [email, setEmail, password, username] = useState('');
 
   const handleGoogleLogin = () => {
     window.location.href = 'http://localhost:5000/auth/google';
@@ -28,8 +28,22 @@ const LoginPage = () => {
         </div>
 
         {/* Form Header */}
-        <h2 className="text-lg font-bold mb-4 text-center">Sign in</h2>
-
+        <h2 className="text-lg font-bold mb-4 text-center">Sign up</h2>
+        <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              username
+            </label>
+            <input
+              type="username"
+              id="username"
+              value={username}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email Address"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
         {/* Email Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -55,9 +69,24 @@ const LoginPage = () => {
               password
             </label>
             <input
-              type="email"
-              id="email"
-              value={email}
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="password"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              value={password}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="password"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -73,11 +102,7 @@ const LoginPage = () => {
           </button>
         </form>
 
-        {/* Sign Up Link */}
-        <p className="mt-4 text-center text-sm text-gray-600">
-        forgot password?{' '}
-          
-        </p>
+   
 
         {/* Divider */}
         <div className="flex items-center my-6">
@@ -108,4 +133,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default SignupPage;
