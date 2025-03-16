@@ -20,6 +20,39 @@ module.exports = (app, pool) => {
       res.status(500).json({ error: 'Internal server error' });
     }
   });
+
+  // Fetch single spot by ID
+  app.get('/spots/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+      const result = await pool.query('SELECT * FROM spots WHERE id = $1', [id]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Spot not found' });
+      }
+
+      const spot = result.rows[0];
+      // Transform the spot data to match the frontend expectations
+      const transformedSpot = {
+        ...spot,
+        images: Array.isArray(spot.image_url)
+          ? spot.image_url
+          : typeof spot.image_url === 'string'
+          ? [spot.image_url]
+          : [],
+        comments: Array.isArray(spot.comments)
+          ? spot.comments
+          : typeof spot.comments === 'string'
+          ? JSON.parse(spot.comments)
+          : []
+      };
+
+      res.status(200).json(transformedSpot);
+    } catch (error) {
+      console.error('Error fetching spot:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
   
   
   

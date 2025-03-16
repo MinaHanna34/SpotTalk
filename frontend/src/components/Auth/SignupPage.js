@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { GoogleIcon, MicrosoftIcon, EyeIcon, EyeOffIcon } from '@/components/icons/SocialIcons';
-import { Mail, Lock, User, Check, X } from 'lucide-react';
+import { Mail, Lock, User } from 'lucide-react';
 
 const SignUpPage = () => {
     const [formData, setFormData] = useState({
@@ -17,10 +17,6 @@ const SignUpPage = () => {
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [passwordStrength, setPasswordStrength] = useState({
-        score: 0,
-        label: 'Enter password'
-    });
     const router = useRouter();
 
     const checkPasswordStrength = (password) => {
@@ -44,76 +40,36 @@ const SignUpPage = () => {
         };
     };
 
-    const getStrengthColor = (score) => {
-        const colors = {
-            0: 'bg-gray-200',  // Empty state
-            1: 'bg-red-500',   // Weak
-            2: 'bg-yellow-500', // Fair
-            3: 'bg-blue-500',  // Good
-            4: 'bg-green-500'  // Strong
-        };
-        return colors[score] || colors[0];
-    };
-
-    const getStrengthTextColor = (score) => {
-        const colors = {
-            0: 'text-gray-600',  // Empty state
-            1: 'text-red-500',   // Weak
-            2: 'text-yellow-500', // Fair
-            3: 'text-blue-500',  // Good
-            4: 'text-green-500'  // Strong
-        };
-        return colors[score] || colors[0];
-    };
-
-    const validateUsername = (username) => {
-        const checks = [
-            {
-                label: '2-32 characters',
-                valid: username.length >= 2 && username.length <= 32
-            },
-            {
-                label: 'Lowercase letters, numbers, periods, and underscores only',
-                valid: /^[a-z0-9._]+$/.test(username)
-            },
-            {
-                label: 'Cannot start or end with a period or underscore',
-                valid: !/^[._]|[._]$/.test(username)
-            }
-        ];
-        return checks;
-    };
-
     const validateForm = () => {
-        let errors = {};
+        let tempErrors = {};
 
+        // Username validation
         if (formData.username.length < 2 || formData.username.length > 32) {
-            errors.username = "Username must be between 2 and 32 characters";
+            tempErrors.username = "Username must be between 2 and 32 characters";
         }
         if (!/^[a-z0-9._]+$/.test(formData.username)) {
-            errors.username = "Username can only contain lowercase letters, numbers, periods, and underscores";
+            tempErrors.username = "Username can only contain lowercase letters, numbers, periods, and underscores";
         }
-        if (/^[._]|[._]$|[.]{2}|[_]{2}/.test(formData.username)) {
-            errors.username = "Username cannot start or end with a period or underscore";
+        if (/^[._]|[._]$/.test(formData.username)) {
+            tempErrors.username = "Username cannot start or end with a period or underscore";
         }
 
+        // Email validation
         if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            errors.email = "Email is invalid";
+            tempErrors.email = "Email is invalid";
         }
 
-        if (/\s/.test(formData.password)) {
-            errors.password = "Password should not contain spaces";
+        // Password validation
+        const strength = checkPasswordStrength(formData.password);
+        if (strength.score < 2) {
+            tempErrors.password = "Password must contain uppercase, lowercase, numbers, and special characters";
         }
-        if (formData.password.length < 8) {
-            errors.password = "Password must be at least 8 characters long";
-        }
-        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(formData.password)) {
-            errors.password = "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character";
-        }
+
         if (formData.password !== formData.confirmPassword) {
-            errors.confirmPassword = "Passwords do not match";
+            tempErrors.confirmPassword = "Passwords do not match";
         }
-        return errors;
+
+        return tempErrors;
     };
 
     const handleSocialLogin = (provider) => {
@@ -127,10 +83,6 @@ const SignUpPage = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
-        
-        if (name === 'password') {
-            setPasswordStrength(checkPasswordStrength(value));
-        }
     };
 
     const handleSubmit = async (e) => {
@@ -149,7 +101,6 @@ const SignUpPage = () => {
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Store user data in localStorage for navbar
                     localStorage.setItem('user', JSON.stringify({
                         username: data.user.username,
                         id: data.user.id
@@ -177,7 +128,6 @@ const SignUpPage = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
-            {/* Main Content */}
             <div className="w-full max-w-md px-4">
                 <div className="bg-white p-8 rounded-lg shadow-lg w-full">
                     <h2 className="text-4xl font-bold mb-1 text-center text-gray-800">Canbyr</h2>
@@ -278,53 +228,56 @@ const SignUpPage = () => {
                             {errors.confirmPassword && <p className="text-sm text-red-600 mt-1">{errors.confirmPassword}</p>}
                         </div>
 
-                        {errors.server && <p className="text-sm text-red-600">{errors.server}</p>}
+                        {errors.server && (
+                            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+                                {errors.server}
+                            </div>
+                        )}
 
-                        {/* Submit Button */}
                         <button
                             type="submit"
-                            className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all mt-6"
+                            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200"
                         >
                             Sign Up
                         </button>
+                    </form>
 
-                        {/* Social Login Section */}
-                        <div className="mt-6">
-                            <div className="relative">
-                                <div className="absolute inset-0 flex items-center">
-                                    <div className="w-full border-t border-gray-300"></div>
-                                </div>
-                                <div className="relative flex justify-center text-sm">
-                                    <span className="px-2 bg-white text-gray-500">or continue with</span>
-                                </div>
+                    <div className="mt-6">
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-gray-300"></div>
                             </div>
-
-                            <div className="mt-6 grid grid-cols-2 gap-3">
-                                <button
-                                    onClick={() => handleSocialLogin('google')}
-                                    className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                                >
-                                    <GoogleIcon className="w-5 h-5 mr-2" />
-                                    <span className="text-sm font-medium">Google</span>
-                                </button>
-                                <button
-                                    onClick={() => handleSocialLogin('microsoft')}
-                                    className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                                >
-                                    <MicrosoftIcon className="w-5 h-5 mr-2" />
-                                    <span className="text-sm font-medium">Microsoft</span>
-                                </button>
+                            <div className="relative flex justify-center text-sm">
+                                <span className="px-2 bg-white text-gray-500">Or continue with</span>
                             </div>
                         </div>
 
-                        {/* Sign In Link */}
-                        <p className="mt-6 text-center text-sm text-gray-600">
-                            Already have an account?{' '}
-                            <Link href="/login" className="text-blue-600 hover:text-blue-800 font-medium">
-                                Sign in
-                            </Link>
-                        </p>
-                    </form>
+                        <div className="mt-6 grid grid-cols-2 gap-3">
+                            <button
+                                type="button"
+                                onClick={() => handleSocialLogin('google')}
+                                className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            >
+                                <GoogleIcon className="h-5 w-5 mr-2" />
+                                Google
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleSocialLogin('microsoft')}
+                                className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            >
+                                <MicrosoftIcon className="h-5 w-5 mr-2" />
+                                Microsoft
+                            </button>
+                        </div>
+                    </div>
+
+                    <p className="mt-6 text-center text-sm text-gray-600">
+                        Already have an account?{' '}
+                        <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+                            Sign in
+                        </Link>
+                    </p>
                 </div>
             </div>
         </div>

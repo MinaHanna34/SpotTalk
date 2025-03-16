@@ -48,14 +48,14 @@ const Navbar = () => {
 
   return (
     <nav className="w-full border-b border-gray-200 px-8 py-4 flex items-center bg-white relative z-50">
-      {/* Left Section: Create link */}
+      {/* Left Section: Create Button */}
       <div className="flex-1 flex items-center">
         <Link
           href="/map"
-          className="text-gray-800 hover:text-blue-600 font-medium flex items-center"
+          className="text-gray-800 hover:text-blue-600 px-4 py-2 font-medium transition flex items-center space-x-2 rounded-md hover:bg-gray-50"
         >
           <svg
-            className="w-5 h-5 mr-2"
+            className="w-5 h-5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -67,7 +67,7 @@ const Navbar = () => {
               d="M12 4v16m8-8H4"
             />
           </svg>
-          Create
+          <span>Create</span>
         </Link>
       </div>
 
