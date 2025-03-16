@@ -26,7 +26,6 @@ app.use(cors({
 }));
 app.options('*', cors());
 
-
 // Set up session management
 app.use(session({
   secret: process.env.SESSION_SECRET || 'some_secret_key',
@@ -34,8 +33,10 @@ app.use(session({
   saveUninitialized: true
 }));
 
-// Routes for spots
+// Routes
 require('./spots')(app, pool);
+const authRoutes = require('./routes/auth');
+app.use('/auth', authRoutes);
 
 // Create or alter tables for spots
 pool.query(`
@@ -53,6 +54,19 @@ pool.query(`
 `).then(() => {
   console.log("Spots table is ready");
 }).catch(err => console.error('Error creating spots table:', err));
+
+// Create users table
+pool.query(`
+  CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  );
+`).then(() => {
+  console.log("Users table is ready");
+}).catch(err => console.error('Error creating users table:', err));
 
 // Create or alter table and ensure the image_url column is JSONB
 pool.query(`
@@ -73,13 +87,9 @@ pool.query(`
       ALTER TABLE spots ALTER COLUMN image_url TYPE JSONB USING image_url::JSONB;
     END IF;
   END $$;
-
 `).then(() => {
   console.log("image_url column updated to JSONB");
 }).catch(err => console.error('Error updating image_url column:', err));
-
-
-
 
 app.get('/', async (req, res) => {
   res.send({ "status": "ready" });
