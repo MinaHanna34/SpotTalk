@@ -15,6 +15,7 @@ type Spot = {
   lng?: number;
   stars?: number;
   comments?: string[];
+  location?: string;
 };
 
 type StoryClientProps = {
@@ -26,6 +27,7 @@ export default function StoryClient({ id }: StoryClientProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [location, setLocation] = useState<string>('');
 
   useEffect(() => {
     const fetchStory = async () => {
@@ -45,6 +47,23 @@ export default function StoryClient({ id }: StoryClientProps) {
         
         const data = await response.json();
         console.log('Received story data:', data);
+        
+        // Fetch location if coordinates are available
+        if (data.lat && data.lng) {
+          try {
+            const locationResponse = await fetch(
+              `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${data.lat}&longitude=${data.lng}`
+            );
+            const locationData = await locationResponse.json();
+            const cityState = `${locationData.city || 'Unknown City'}, ${locationData.principalSubdivision || 'Unknown State'}`;
+            setLocation(cityState);
+            data.location = cityState;
+          } catch (error) {
+            console.error('Error fetching location:', error);
+            setLocation('Location unavailable');
+          }
+        }
+        
         setStory(data);
       } catch (error) {
         console.error('Error fetching story:', error);
@@ -160,21 +179,21 @@ export default function StoryClient({ id }: StoryClientProps) {
 
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-3xl font-bold text-gray-900">{story.name}</h1>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">{story.name}</h1>
+                {location && (
+                  <p className="text-gray-600 mt-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    </svg>
+                    {location}
+                  </p>
+                )}
+              </div>
               <p className="text-blue-600 font-medium">Posted by {story.username}</p>
             </div>
             
             <p className="text-gray-700 text-lg mb-6">{story.description}</p>
-
-            {story.lat && story.lng && (
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-2">Location</h2>
-                
-                  {/* Add map component here */}
-            
-                
-              </div>
-            )}
 
             {story.comments && story.comments.length > 0 && (
               <div>

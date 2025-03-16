@@ -11,13 +11,67 @@ type Spot = {
   name: string;
   description: string;
   images: string[];
-  latitude?: number;
-  longitude?: number;
+  lat?: number;
+  lng?: number;
+  location?: string;
 };
 
 type Coordinates = {
   latitude: number;
   longitude: number;
+};
+
+const stateAbbreviations: { [key: string]: string } = {
+  'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR', 'California': 'CA',
+  'Colorado': 'CO', 'Connecticut': 'CT', 'Delaware': 'DE', 'Florida': 'FL', 'Georgia': 'GA',
+  'Hawaii': 'HI', 'Idaho': 'ID', 'Illinois': 'IL', 'Indiana': 'IN', 'Iowa': 'IA',
+  'Kansas': 'KS', 'Kentucky': 'KY', 'Louisiana': 'LA', 'Maine': 'ME', 'Maryland': 'MD',
+  'Massachusetts': 'MA', 'Michigan': 'MI', 'Minnesota': 'MN', 'Mississippi': 'MS', 'Missouri': 'MO',
+  'Montana': 'MT', 'Nebraska': 'NE', 'Nevada': 'NV', 'New Hampshire': 'NH', 'New Jersey': 'NJ',
+  'New Mexico': 'NM', 'New York': 'NY', 'North Carolina': 'NC', 'North Dakota': 'ND', 'Ohio': 'OH',
+  'Oklahoma': 'OK', 'Oregon': 'OR', 'Pennsylvania': 'PA', 'Rhode Island': 'RI', 'South Carolina': 'SC',
+  'South Dakota': 'SD', 'Tennessee': 'TN', 'Texas': 'TX', 'Utah': 'UT', 'Vermont': 'VT',
+  'Virginia': 'VA', 'Washington': 'WA', 'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY'
+};
+
+const getStateAbbreviation = (state: string): string => {
+  // First try direct lookup
+  if (state in stateAbbreviations) {
+    return stateAbbreviations[state];
+  }
+  
+  // If it's already an abbreviation (2 letters), return as is
+  if (state.length === 2 && state === state.toUpperCase()) {
+    return state;
+  }
+  
+  // Try to find a matching state name (case-insensitive)
+  const stateName = Object.keys(stateAbbreviations).find(
+    name => name.toLowerCase() === state.toLowerCase()
+  );
+  
+  if (stateName) {
+    return stateAbbreviations[stateName];
+  }
+  
+  // If no match found, return original value
+  return state;
+};
+
+const fetchLocationForSpot = async (spot: Spot): Promise<string> => {
+  if (!spot.lat || !spot.lng) return '';
+  
+  try {
+    const response = await fetch(
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${spot.lat}&longitude=${spot.lng}`
+    );
+    const data = await response.json();
+    const state = getStateAbbreviation(data.principalSubdivision || 'Unknown State');
+    return `${data.city || 'Unknown City'}, ${state}`;
+  } catch (error) {
+    console.error('Error getting location:', error);
+    return '';
+  }
 };
 
 export default function Home() {
@@ -69,19 +123,27 @@ export default function Home() {
   const fetchNearbySpots = async () => {
     try {
       setLoading(true);
-      // In a real app, you would send the coordinates to get nearby spots
-      // For now, we'll just fetch all spots since the API doesn't support location filtering
       const response = await fetch("https://api.canbyr.com/spots");
       const data = await response.json();
-      setStories(
-        data.map((spot: Spot) => ({
-          id: spot.id,
-          username: spot.username || "Anonymous",
-          name: spot.name || "Unnamed Event",
-          description: spot.description || "No description available.",
-          images: Array.isArray(spot.images) ? spot.images : [],
-        }))
+      
+      // Process each spot to include location
+      const spotsWithLocation = await Promise.all(
+        data.map(async (spot: Spot) => {
+          const location = await fetchLocationForSpot(spot);
+          return {
+            id: spot.id,
+            username: spot.username || "Anonymous",
+            name: spot.name || "Unnamed Event",
+            description: spot.description || "No description available.",
+            images: Array.isArray(spot.images) ? spot.images : [],
+            lat: spot.lat,
+            lng: spot.lng,
+            location
+          };
+        })
       );
+      
+      setStories(spotsWithLocation);
     } catch (error) {
       console.error("Error fetching nearby stories:", error);
     } finally {
@@ -94,15 +156,25 @@ export default function Home() {
       setLoading(true);
       const response = await fetch("https://api.canbyr.com/spots");
       const data = await response.json();
-      setStories(
-        data.map((spot: Spot) => ({
-          id: spot.id,
-          username: spot.username || "Anonymous",
-          name: spot.name || "Unnamed Event",
-          description: spot.description || "No description available.",
-          images: Array.isArray(spot.images) ? spot.images : [],
-        }))
+      
+      // Process each spot to include location
+      const spotsWithLocation = await Promise.all(
+        data.map(async (spot: Spot) => {
+          const location = await fetchLocationForSpot(spot);
+          return {
+            id: spot.id,
+            username: spot.username || "Anonymous",
+            name: spot.name || "Unnamed Event",
+            description: spot.description || "No description available.",
+            images: Array.isArray(spot.images) ? spot.images : [],
+            lat: spot.lat,
+            lng: spot.lng,
+            location
+          };
+        })
       );
+      
+      setStories(spotsWithLocation);
     } catch (error) {
       console.error("Error fetching random stories:", error);
     } finally {
@@ -193,8 +265,20 @@ export default function Home() {
                     )}
                   </div>
                   <div className="p-4">
-                    <p className="text-sm text-blue-600 font-medium mb-2">{story.username}</p>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2 line-clamp-1">{story.name}</h3>
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-800 mb-1">{story.name}</h3>
+                        {story.location && (
+                          <p className="text-gray-600 text-sm mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline mr-1" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                            </svg>
+                            {story.location}
+                          </p>
+                        )}
+                      </div>
+                      <p className="text-sm text-blue-600 font-medium">By {story.username}</p>
+                    </div>
                     <p className="text-gray-600 text-sm line-clamp-2 mb-4">{story.description}</p>
                     <div className="w-full px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition text-center border border-gray-200">
                       View Full Story
