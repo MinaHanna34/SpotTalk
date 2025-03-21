@@ -24,9 +24,9 @@ const LoginPage = () => {
 
   const handleSocialLogin = (provider) => {
     if (provider === 'google') {
-      window.location.href = 'http://localhost:5000/auth/google';
+      window.location.href = 'https://api.canbyr.com/auth/google';
     } else if (provider === 'microsoft') {
-      window.location.href = 'http://localhost:5000/auth/azure';
+      window.location.href = 'https://api.canbyr.com/auth/azure';
     }
   };
 
@@ -36,7 +36,7 @@ const LoginPage = () => {
     setIsLoggingIn(true);
 
     try {
-      const response = await fetch('http://localhost:5000/auth/login', {
+      const response = await fetch('https://api.canbyr.com/auth/login', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

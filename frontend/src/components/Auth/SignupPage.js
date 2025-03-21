@@ -74,9 +74,9 @@ const SignUpPage = () => {
 
     const handleSocialLogin = (provider) => {
         if (provider === 'google') {
-            window.location.href = 'http://localhost:5000/auth/google';
+            window.location.href = 'https://api.canbyr.com/auth/google';
         } else if (provider === 'microsoft') {
-            window.location.href = 'http://localhost:5000/auth/azure';
+            window.location.href = 'https://api.canbyr.com/auth/azure';
         }
     };
 
@@ -91,7 +91,7 @@ const SignUpPage = () => {
 
         if (Object.keys(formErrors).length === 0) {
             try {
-                const response = await fetch('http://localhost:5000/auth/signup', {
+                const response = await fetch('https://api.canbyr.com/auth/signup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
